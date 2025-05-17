@@ -1,0 +1,81 @@
+
+
+import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
+import dotenv from "dotenv";
+dotenv.config();
+
+const QDRANT_URL = process.env.QDRANT_ENDPOINT;
+const COLLECTION_NAME = process.env.QDRANT_COLLECTION;
+const API_KEY = process.env.QDRANT_API_KEY;
+
+/**
+ * Uploads vector data to Qdrant collection
+ * @param {Array<number>} vector - The embedding vector to upload
+ * @param {Object} metadata - Metadata to associate with the vector
+ * @returns {Promise<string>} - ID of the uploaded point
+ */
+export async function uploadToQdrant(vector, metadata) {
+  console.log('Uploading to Qdrant...');
+  
+  // Validate inputs
+  if (!Array.isArray(vector) || vector.length === 0) {
+    throw new Error("Vector must be a non-empty array of numbers");
+  }
+  
+  if (!metadata || typeof metadata !== 'object') {
+    throw new Error("Metadata must be a valid object");
+  }
+
+  // Generate a unique ID for this point
+  const id = uuidv4();
+  
+  // Format the payload according to latest Qdrant API (as of May 2025)
+  const payload = {
+    points: [
+      {
+        id,
+        vector,
+        payload: metadata
+      }
+    ]
+  };
+
+  try {
+    // Make the API request to Qdrant
+    const response = await axios.put(
+      `${QDRANT_URL}/collections/${COLLECTION_NAME}/points?wait=true`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": API_KEY
+        }
+      }
+    );
+    
+    // Check if the request was successful
+    if (response.status === 200) {
+      console.log(`Successfully uploaded vector with ID: ${id}`);
+      return id;
+    } else {
+      throw new Error(`Unexpected response status: ${response.status}`);
+    }
+  } catch (error) {
+    // Enhanced error logging
+    console.error("Error uploading to Qdrant:");
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      console.error(`Status: ${error.response.status}`);
+      console.error("Response data:", error.response.data);
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error("No response received:", error.request);
+    } else {
+      // Something happened in setting up the request
+      console.error("Error message:", error.message);
+    }
+    
+    throw error; // Re-throw to allow caller to handle the error
+  }
+}
