@@ -34,6 +34,27 @@ React UI ↔ Express API ↔ Gemini API ↕ Redis (chat history)
 
 ---
 
+### RAG Pipeline
+
+1. **Collect News Articles**
+   - Fetched top 50 news headlines used `@extractus/article-extractor` npm package to extract news from https://theguardian.com
+
+2. **Generate Embeddings (Jina AI)**
+   - Used `jina-embeddings-v2-base-en` via Jina API.
+   - Each news: `title + url + content` → vector.
+
+3. **Store in Qdrant**
+   - Vectors + metadata stored in `news` collection.
+   - Tech: Qdrant Cloud (free-tier, fast vector DB).
+
+4. **User Query Flow**
+   - Query → embed via Jina API.
+   - Search top 5 similar vectors from Qdrant.
+   - Combine matched article contents.
+   - Final prompt = context + user question → send to LLM.
+
+---
+
 ## API Endpoints
 
 ### `POST /api/chat/query`
