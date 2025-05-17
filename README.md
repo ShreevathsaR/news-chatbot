@@ -2,7 +2,7 @@
 
 # Verifast News Chatbot — RAG-based AI Chat App
 
-Deployed app link: chatbot.vathsa.site
+Deployed app link - https://chatbot.vathsa.site
 
 A full-stack AI chatbot built for the Verifast internship assignment. It uses a Retrieval-Augmented Generation (RAG) pipeline powered by **Gemini API Flash 1.5**, with Redis for chat history, and a React + Tailwind UI frontend. The chatbot helps users explore the latest news by querying relevant articles and generating intelligent summaries.
 
@@ -146,7 +146,7 @@ await redis.expire(`chat:${sessionId}`, 3600)
 Author
 
 Shreevathsa R
-Portfolio —vathsa.site
+Portfolio — https://vathsa.site
 
 ---
 
