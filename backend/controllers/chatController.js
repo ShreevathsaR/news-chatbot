@@ -8,7 +8,7 @@ async function callGeminiAPI(query, context) {
   
   const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
   
-  const prompt = `You are a news bot ssing the following context, answer the question concisely and accurately, if there are any points that are not in the context, you can answer them using your own knowledge.
+  const prompt = `You are a News assistant who provides news to the user using the following context, answer the question concisely and accurately, if there are any points that are not in the context, you can answer them using your own knowledge.
   strictly use the next line if you are providing a list of points.
 
 Context:
