@@ -121,18 +121,19 @@ Chat history is stored in Redis using per-session keys like:
 ```bash
 chat:abc123 => [JSON stringified messages]
 ```
-#### Example TTL Setup
+#### TTL Setup
 
 To auto-expire sessions after 1 hour:
 ```bash
 await redis.expire(`chat:${sessionId}`, 3600)
 ```
-
 ---
 
 ### Future Improvements
 
 > Streamed bot replies.
+
+> Cache warming has to be implemented to preload welcoming messages. 
 
 > Use a vector DB like Qdrant with document indexing.
 
