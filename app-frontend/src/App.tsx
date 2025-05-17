@@ -46,7 +46,8 @@ function App() {
     setIsLoading(true)
 
     try {
-      const response = await axios.post("http://localhost:5000/api/chat/query", {
+      // const response = await axios.post("http://localhost:5000/api/chat/query", {
+      const response = await axios.post("https://news-chatbot-3ynr.onrender.com/api/chat/query", {
         query: input,
       })
 
