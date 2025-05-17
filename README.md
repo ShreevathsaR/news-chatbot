@@ -37,7 +37,7 @@ React UI ↔ Express API ↔ Gemini API ↕ Redis (chat history)
 ### RAG Pipeline
 
 1. **Collect News Articles**
-   - Fetched top 50 news headlines used `@extractus/article-extractor` npm package to extract news from https://theguardian.com
+   - Fetched top 100 news headlines used `@extractus/article-extractor` npm package to extract news from https://theguardian.com
 
 2. **Generate Embeddings (Jina AI)**
    - Used `jina-embeddings-v2-base-en` via Jina API.
