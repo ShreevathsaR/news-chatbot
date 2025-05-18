@@ -8,21 +8,22 @@ import { ingestArticlesToQdrant } from "../utils/ingestArticles.js";
 
 const getNewsArticles = async (req, res) => {
   try {
-    const rssURL = "https://www.theguardian.com/international/rss";
+    const rssURL = "https://timesofindia.indiatimes.com/rssfeedstopstories.cms";
+
     const rssRes = await axios.get(rssURL);
     const parsedRSS = await parseXML(rssRes.data);
 
     const items = parsedRSS.rss.channel[0].item;
     const articleURLs = items.slice(0, 50).map((item) => item.link[0]);
-    console.log("Number of articles", articleURLs.length);
+    console.log("Number of articles:", articleURLs.length);
+
     const articles = [];
 
     for (const url of articleURLs) {
       try {
         const article = await extract(url);
-        // console.log("article extracted from", url);
-        if (article && article.content) {
 
+        if (article && article.content) {
           const cleanContent = striptags(decode(article.content));
 
           articles.push({
@@ -36,7 +37,7 @@ const getNewsArticles = async (req, res) => {
       }
     }
 
-    const response = ingestArticlesToQdrant(articles);
+    const response = await ingestArticlesToQdrant(articles);
 
     res.json(response);
   } catch (err) {
@@ -46,3 +47,4 @@ const getNewsArticles = async (req, res) => {
 };
 
 export { getNewsArticles };
+
