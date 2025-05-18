@@ -3,7 +3,7 @@ import { getJinaEmbedding } from "./embedder.js";
 import { uploadToQdrant } from "./qdrantUploader.js";
 
 export async function ingestArticlesToQdrant(articles) {
-    console.log('Ingesting 50 articles...')
+    console.log(`Ingesting ${articles.length} articles...`)
   for (const article of articles) {
     const { title, url, content } = article;
 
