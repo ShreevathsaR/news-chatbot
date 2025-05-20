@@ -23,6 +23,8 @@ export async function searchQdrant(queryVector, topK) {
       }
     );
 
+    // console.log("Qdrant search response:", response.data);
+
     return response.data.result;
   } catch (error) {
     console.error("Error searching Qdrant:", error.response?.data || error.message);

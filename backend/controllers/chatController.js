@@ -77,6 +77,8 @@ export async function answerQuery(req, res) {
 
     const contextText = searchResults.map((r) => r.payload.chunk).join("\n\n");
 
+    console.log("Context Text:", contextText);
+
     const answer = await callGeminiAPI(userQuery, contextText);
 
     const userMessage = { id: uuidv4(), sender: "user", content: userQuery };

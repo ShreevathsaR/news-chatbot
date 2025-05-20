@@ -13,6 +13,8 @@ const getNewsArticles = async (req, res) => {
     const rssRes = await axios.get(rssURL);
     const parsedRSS = await parseXML(rssRes.data);
 
+    // console.log("Parsed RSS:", parsedRSS.rss.channel[0].item);
+
     const items = parsedRSS.rss.channel[0].item;
     const articleURLs = items.slice(0, 50).map((item) => item.link[0]);
     console.log("Number of articles:", articleURLs.length);
@@ -20,12 +22,16 @@ const getNewsArticles = async (req, res) => {
     const articles = [];
 
     for (const url of articleURLs) {
+      // console.log("Fetching article:", url);
       try {
         const article = await extract(url);
 
+        // console.log("Article:", article);
+        
         if (article && article.content) {
           const cleanContent = striptags(decode(article.content));
-
+          // console.log("Cleaned content:", cleanContent);
+          
           articles.push({
             url,
             title: article.title,

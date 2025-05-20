@@ -1,10 +1,10 @@
 export function chunkText(text, maxWords = 200) {
   if (!text || text.trim() === "") {
-    console.log("🚫 Text is empty or undefined. Returning empty chunks.");
+    console.log("Text is empty or undefined. Returning empty chunks.");
     return [];
   }
 
-  console.log(`🔢 Chunking text into sentence-based chunks of approx ${maxWords} words...`);
+  console.log(`Chunking text into sentence-based chunks of approx ${maxWords} words...`);
 
   const sentences = text.match(/[^.!?]+[.!?]+[\])'"`’”]*|\s*$/g).filter(Boolean);
 
