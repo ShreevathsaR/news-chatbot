@@ -20,17 +20,18 @@ app.get("/", (_req, res) => {
   res.send("API IS RUNNING");
 });
 
-const pingServer = () => {
-  axios
-    .get(process.env.SERVER_URL)
-    .then((response) => {
-      console.log("Ping successful:", response.status);
-    })
-    .catch((error) => {
-      console.error("Ping failed:", error.message);
-    });
-};
-setInterval(pingServer, 300000);
+//Exceeding free tier limit so this cron job is stopped
+// const pingServer = () => {
+//   axios
+//     .get(process.env.SERVER_URL)
+//     .then((response) => {
+//       console.log("Ping successful:", response.status);
+//     })
+//     .catch((error) => {
+//       console.error("Ping failed:", error.message);
+//     });
+// };
+// setInterval(pingServer, 300000);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
