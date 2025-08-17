@@ -1,15 +1,15 @@
 import { getJinaEmbedding } from "../utils/embedder.js";
 import { searchQdrant } from "../utils/qdrantSearch.js";
-import { v4 as uuidv4 } from 'uuid'
+import { v4 as uuidv4 } from "uuid";
 import redis from "../lib/redis.js";
 
 async function callGeminiAPI(query, context) {
   console.log("Calling Gemini API with query:", query);
-  
-  const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
-  
-  const prompt = `You are a News assistant who provides news to the user using the following context, answer the question concisely and accurately, if there are any points that are not in the context, you can answer them using your own knowledge.
-  strictly use the next line if you are providing a list of points.
+
+  const API_URL =
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
+  const prompt = `You are a News assistant who provides news to the user. So what you do is using the following context, answer the question friendly and accurately, if there are any points that are not in the context, you can answer them using your own knowledge, your answer must be in Markdown format, hide from user that you are providing news from a context hide it do not tell the user that you are referring a context if you are providing points then please leave space an empty line (\n) between points.
 
 Context:
 ${context}
@@ -25,39 +25,43 @@ Answer:`;
         {
           parts: [
             {
-              text: prompt
-            }
-          ]
-        }
+              text: prompt,
+            },
+          ],
+        },
       ],
       generationConfig: {
         temperature: 0.3,
         topK: 40,
         topP: 0.95,
-        maxOutputTokens: 1024
-      }
+        maxOutputTokens: 1024,
+      },
     };
 
-    const response = await fetch(`${API_URL}?key=${process.env.GEMINI_API_KEY}`,
+    const response = await fetch(
+      `${API_URL}?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       }
     );
 
     const data = await response.json();
-    
+
     if (!response.ok) {
       console.error("Gemini API error:", data);
       throw new Error(data.error?.message || "Unknown API error");
     }
 
     // console.log("Gemini API response:", data);
-    
-    return data.candidates[0].content.parts[0].text || "No answer generated. Response format unexpected.";
+
+    return (
+      data.candidates[0].content.parts[0].text ||
+      "No answer generated. Response format unexpected."
+    );
   } catch (error) {
     console.error("Error calling Gemini API:", error);
     throw error;
@@ -65,9 +69,10 @@ Answer:`;
 }
 
 export async function answerQuery(req, res) {
-  const {query:userQuery, sessionId} = req.body;
+  const { query: userQuery, sessionId } = req.body;
 
-  if (!userQuery || !sessionId) return res.status(400).json({ error: "Query & Session ID is required" });
+  if (!userQuery || !sessionId)
+    return res.status(400).json({ error: "Query & Session ID is required" });
 
   try {
     const queryEmbedding = await getJinaEmbedding(userQuery);
@@ -84,10 +89,14 @@ export async function answerQuery(req, res) {
     const userMessage = { id: uuidv4(), sender: "user", content: userQuery };
     const botMessage = { id: uuidv4(), sender: "bot", content: answer };
 
-    const sessionKey = `chat:${sessionId}`
+    const sessionKey = `chat:${sessionId}`;
 
-    await redis.rpush(sessionKey, JSON.stringify(userMessage), JSON.stringify(botMessage))
-    await redis.expire(sessionKey, 3600)//1hr
+    await redis.rpush(
+      sessionKey,
+      JSON.stringify(userMessage),
+      JSON.stringify(botMessage)
+    );
+    await redis.expire(sessionKey, 3600); //1hr
 
     console.log("AI Answer:", answer);
 
@@ -99,24 +108,23 @@ export async function answerQuery(req, res) {
 }
 
 export const getHistory = async (req, res) => {
-  const { sessionId } = req.query
-  if (!sessionId) return res.status(400).json({ error: 'Missing sessionId' })
+  const { sessionId } = req.query;
+  if (!sessionId) return res.status(400).json({ error: "Missing sessionId" });
 
-  const sessionKey = `chat:${sessionId}`
-  const messages = await redis.lrange(sessionKey, 0, -1)
+  const sessionKey = `chat:${sessionId}`;
+  const messages = await redis.lrange(sessionKey, 0, -1);
 
-  const parsed = messages.map(msg => JSON.parse(msg))
-  res.json({ messages: parsed })
-}
+  const parsed = messages.map((msg) => JSON.parse(msg));
+  res.json({ messages: parsed });
+};
 
 export const deleteHistory = async (req, res) => {
-  const { sessionId } = req.query
-  if (!sessionId) return res.status(400).json({ error: 'Missing sessionId' })
+  const { sessionId } = req.query;
+  if (!sessionId) return res.status(400).json({ error: "Missing sessionId" });
 
-  const sessionKey = `chat:${sessionId}`
-  console.log(sessionKey)
-  await redis.del(sessionKey)
+  const sessionKey = `chat:${sessionId}`;
+  console.log(sessionKey);
+  await redis.del(sessionKey);
 
-  res.json({ success: true })
-}
-
+  res.json({ success: true });
+};

@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import newsRoutes from "./routes/newsRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 import axios from "axios";
 
 dotenv.config();
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use("/api", newsRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/auth", authRoutes);
 
 app.get("/", (_req, res) => {
   res.send("API IS RUNNING");

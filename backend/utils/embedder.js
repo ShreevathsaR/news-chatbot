@@ -20,6 +20,8 @@ export async function getJinaEmbedding(text) {
       }
     );
 
+    console.log('Embeddings', response.data.data[0].embedding)
+
     return response.data.data[0].embedding;
   } catch (error) {
     console.error("Error fetching embedding:", error);
