@@ -7,9 +7,11 @@ import { MessageCircle, Send, RefreshCw, LogOut } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import api from "../lib/api";
 import Markdown from "react-markdown";
-import Sidebar from "@/components/Sidebar"
+import Sidebar from "@/components/Sidebar";
 import { queryStore } from "@/lib/contexts/queryStore";
 import { toast } from "sonner";
+import { Notification } from "@/lib/types/notification";
+import Notifications from "@/components/Notifications";
 interface Message {
   id: string;
   content: string;
@@ -22,7 +24,13 @@ interface User {
   email: string;
 }
 
-function ChatScreen() {
+function ChatScreen({
+  notifications,
+  clearNotifications,
+}: {
+  notifications: Notification[];
+  clearNotifications: () => void;
+}) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +42,7 @@ function ChatScreen() {
       : null
   );
   const [_, setToken] = useState(localStorage.getItem("token"));
-  const selectedQuery  = queryStore((state) => state.selectedQuery);
+  const selectedQuery = queryStore((state) => state.selectedQuery);
 
   useEffect(() => {
     scrollToBottom();
@@ -55,7 +63,9 @@ function ChatScreen() {
 
     const getHistory = async () => {
       try {
-        const response = await api.get(`/chat/history?sessionId=${sessionId}&queryId=${selectedQuery?.id}`);
+        const response = await api.get(
+          `/chat/history?sessionId=${sessionId}&queryId=${selectedQuery?.id}`
+        );
         if (response.data.messages) setMessages(response.data.messages);
       } catch (error) {
         console.log("Error getting history", error);
@@ -112,7 +122,9 @@ function ChatScreen() {
 
   const handleReset = async () => {
     try {
-      const response = await api.delete(`/chat/history?sessionId=${sessionId}&queryId=${selectedQuery?.id}`);
+      const response = await api.delete(
+        `/chat/history?sessionId=${sessionId}&queryId=${selectedQuery?.id}`
+      );
       console.log("response", response);
       setMessages([]);
       toast.success("Chat reset successfully!");
@@ -161,6 +173,7 @@ function ChatScreen() {
                 <LogOut className="w-4 h-4" />
                 <span>Logout</span>
               </Button>
+              <Notifications notifications={notifications} clearNotifications={clearNotifications} />
             </div>
           </div>
         </header>
