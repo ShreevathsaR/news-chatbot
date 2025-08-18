@@ -21,6 +21,7 @@
     "express": "^5.1.0",
     "he": "^1.2.0",
     "ioredis": "^5.6.1",
+    "jsonwebtoken": "^9.0.2",
     "node-fetch": "^3.3.2",
     "nodemon": "^3.1.10",
     "striptags": "^3.2.0",

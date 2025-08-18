@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import newsRoutes from "./routes/newsRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import queryRoutes from "./routes/queryRoutes.js";
 import axios from "axios";
 
 dotenv.config();
@@ -12,7 +13,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/api", newsRoutes);
+app.use("/api", newsRoutes, queryRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/auth", authRoutes);
 

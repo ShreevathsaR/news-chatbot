@@ -3,15 +3,23 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Card } from "../components/ui/card";
 import { ThemeProvider } from "../components/theme-provider";
-import { MessageCircle, Send, RefreshCw } from "lucide-react";
+import { MessageCircle, Send, RefreshCw, LogOut } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import api from "../lib/api";
-import Markdown from 'react-markdown'
-
+import Markdown from "react-markdown";
+import Sidebar from "@/components/Sidebar"
+import { queryStore } from "@/lib/contexts/queryStore";
+import { toast } from "sonner";
 interface Message {
   id: string;
   content: string;
   sender: "user" | "bot";
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
 }
 
 function ChatScreen() {
@@ -20,6 +28,13 @@ function ChatScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [sessionId, setSessionId] = useState("");
+  const [user, setUser] = useState<User | null>(
+    localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user")!)
+      : null
+  );
+  const [_, setToken] = useState(localStorage.getItem("token"));
+  const selectedQuery  = queryStore((state) => state.selectedQuery);
 
   useEffect(() => {
     scrollToBottom();
@@ -40,14 +55,14 @@ function ChatScreen() {
 
     const getHistory = async () => {
       try {
-        const response = await api.get(`/chat/history?sessionId=${sessionId}`);
+        const response = await api.get(`/chat/history?sessionId=${sessionId}&queryId=${selectedQuery?.id}`);
         if (response.data.messages) setMessages(response.data.messages);
       } catch (error) {
         console.log("Error getting history", error);
       }
     };
     getHistory();
-  }, [sessionId]);
+  }, [sessionId, selectedQuery]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -70,6 +85,7 @@ function ChatScreen() {
       const response = await api.post("/chat/query", {
         query: input,
         sessionId,
+        queryId: selectedQuery?.id,
       });
 
       console.log("Bot reply", response.data.answer);
@@ -96,63 +112,91 @@ function ChatScreen() {
 
   const handleReset = async () => {
     try {
-      const response = await api.delete(`/chat/history?sessionId=${sessionId}`);
-      console.log("response", response);  
+      const response = await api.delete(`/chat/history?sessionId=${sessionId}&queryId=${selectedQuery?.id}`);
+      console.log("response", response);
       setMessages([]);
+      toast.success("Chat reset successfully!");
     } catch (err) {
       console.error("Error resetting chat:", err);
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setToken(null);
+    setUser(null);
+    window.location.href = "/login";
+  };
+
   return (
     <ThemeProvider defaultTheme="dark">
-      <div className="flex flex-col min-h-screen bg-[#000000]">
+      <div className="flex w-full flex-col min-h-svh bg-[#000000]">
         <header className="sticky top-0 z-10 bg-[#111111] border-b border-[#333333]">
           <div className="container flex items-center justify-between h-16 px-4 mx-auto">
             <div className="flex items-center space-x-2">
-              <MessageCircle className="w-6 h-6 text-white" />
-              <h1 className="text-xl font-bold text-white">News Assistant</h1>
+              <div className="flex items-center space-x-2">
+                <MessageCircle className="w-6 h-6 text-white" />
+                <h1 className="text-xl font-bold text-white">News Assistant</h1>
+              </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleReset}
-              className="flex items-center space-x-1 border-[#333333] text-white hover:bg-[#222222]"
-            >
-              <RefreshCw className="w-4 h-4" />
-              <span>Reset</span>
-            </Button>
+            <p>{selectedQuery?.query}</p>
+            <div className="flex items-center space-x-2">
+              <p>Welcome {user?.name}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReset}
+                className="flex items-center space-x-1 border-[#333333] text-white hover:bg-[#222222]"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Reset</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="flex items-center space-x-1 border-[#333333] text-white hover:bg-[#222222]"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </Button>
+            </div>
           </div>
         </header>
-
-        <div className="flex-1 container mx-auto px-4 py-6 overflow-hidden">
-          <div className="flex flex-col space-y-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.sender === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                <Card
-                  className={`max-w-[80%] md:max-w-[70%] p-3 border-0 ${
-                    message.sender === "user"
-                      ? "bg-[#333333] text-white"
-                      : "bg-[#111111] text-[#f1f1f1]"
+        <div className="flex h-screen flex-row">
+          <Sidebar />
+          <div className="flex-1 container mx-auto px-4 py-6 overflow-hidden">
+            <div className="flex flex-col space-y-4 overflow-y-auto max-h-[calc(100vh-8rem)]">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${
+                    message.sender === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  <div className="text-sm md:text-base"><Markdown>{message.content}</Markdown></div>
-                </Card>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <Card className="max-w-[80%] md:max-w-[70%] p-3 bg-[#111111] text-[#f1f1f1] border-0">
-                  <p className="text-sm md:text-base">Typing...</p>
-                </Card>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
+                  <Card
+                    className={`max-w-[80%] md:max-w-[70%] p-3 border-0 ${
+                      message.sender === "user"
+                        ? "bg-[#333333] text-white"
+                        : "bg-[#111111] text-[#f1f1f1]"
+                    }`}
+                  >
+                    <div className="text-sm md:text-base">
+                      <Markdown>{message.content}</Markdown>
+                    </div>
+                  </Card>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <Card className="max-w-[80%] md:max-w-[70%] p-3 bg-[#111111] text-[#f1f1f1] border-0">
+                    <p className="text-sm md:text-base">Typing...</p>
+                  </Card>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
           </div>
         </div>
 

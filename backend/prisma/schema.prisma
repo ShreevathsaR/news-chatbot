@@ -18,4 +18,13 @@ model User {
   name     String
   email    String @unique
   password String
+  queries  Query[]
+}
+
+model Query {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  query     String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }

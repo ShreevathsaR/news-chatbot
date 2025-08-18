@@ -69,7 +69,7 @@ Answer:`;
 }
 
 export async function answerQuery(req, res) {
-  const { query: userQuery, sessionId } = req.body;
+  const { query: userQuery, sessionId, queryId } = req.body;
 
   if (!userQuery || !sessionId)
     return res.status(400).json({ error: "Query & Session ID is required" });
@@ -89,7 +89,7 @@ export async function answerQuery(req, res) {
     const userMessage = { id: uuidv4(), sender: "user", content: userQuery };
     const botMessage = { id: uuidv4(), sender: "bot", content: answer };
 
-    const sessionKey = `chat:${sessionId}`;
+    const sessionKey = `chat:${sessionId}:${queryId}`;
 
     await redis.rpush(
       sessionKey,
@@ -108,10 +108,10 @@ export async function answerQuery(req, res) {
 }
 
 export const getHistory = async (req, res) => {
-  const { sessionId } = req.query;
+  const { sessionId, queryId } = req.query;
   if (!sessionId) return res.status(400).json({ error: "Missing sessionId" });
 
-  const sessionKey = `chat:${sessionId}`;
+  const sessionKey = `chat:${sessionId}:${queryId}`;
   const messages = await redis.lrange(sessionKey, 0, -1);
 
   const parsed = messages.map((msg) => JSON.parse(msg));
@@ -119,10 +119,10 @@ export const getHistory = async (req, res) => {
 };
 
 export const deleteHistory = async (req, res) => {
-  const { sessionId } = req.query;
+  const { sessionId, queryId } = req.query;
   if (!sessionId) return res.status(400).json({ error: "Missing sessionId" });
 
-  const sessionKey = `chat:${sessionId}`;
+  const sessionKey = `chat:${sessionId}:${queryId}`;
   console.log(sessionKey);
   await redis.del(sessionKey);
 
