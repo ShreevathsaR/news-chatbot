@@ -23,7 +23,8 @@ export async function checkAndNotifyUsers(
       `Checking match for query: "${queryText}" and chunk: "${metadata.chunk}"`
     );
 
-    const isMatch = compareEmbeddings(queryEmbedding, embedding);
+    const isMatch = await compareEmbeddings(queryEmbedding, embedding);
+    console.log('Match result:', isMatch);
 
     if (isMatch) {
       console.log(
@@ -70,7 +71,7 @@ async function compareEmbeddings(embedding1, embedding2) {
   );
   const matching = similarity >= threshold;
   console.log(`Embeddings match: ${matching}`);
-  return similarity >= threshold;
+  return matching;
 }
 
 export function clearOldNotifications() {
