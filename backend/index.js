@@ -17,14 +17,14 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: ["https://chatbot.vathsa.site", "http://localhost:5173"],
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST","PUT","DELETE"],
     credentials: true,
   },
 });
 
 app.use(cors({
   origin: ["https://chatbot.vathsa.site", "http://localhost:5173"],
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
 }));
 app.use(express.json());
@@ -91,7 +91,6 @@ export async function notifyUser(userId, article) {
         })
       );
     } else {
-      // Socket doesn't exist anymore, clean up
       delete activeUsers[userId];
       delete socketToUser[socketId];
       console.log(`Socket ${socketId} for user ${userId} no longer exists, cleaned up`);

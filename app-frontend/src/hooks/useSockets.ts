@@ -25,6 +25,9 @@ export const useSocket = (userId: number | null): UseSocketReturn => {
     });
 
     newSocket.on('new_article', (data: Notification) => {
+
+      console.log('New article notification received:', data);
+
       setNotifications((prev) => [...prev, data]);
     });
 
