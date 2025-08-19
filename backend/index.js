@@ -16,14 +16,14 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://chatbot.vathsa.site",
+    origin: ["https://chatbot.vathsa.site", "http://localhost:5173"],
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
 app.use(cors({
-  origin: "https://chatbot.vathsa.site",
+  origin: ["https://chatbot.vathsa.site", "http://localhost:5173"],
   methods: ["GET", "POST"],
   credentials: true,
 }));
