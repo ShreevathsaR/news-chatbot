@@ -32,12 +32,15 @@ export async function checkAndNotifyUsers(
 
       if (!matchedArticles.includes(`${query.userId}:${metadata.url}`)) {
         matchedArticles.push(`${query.userId}:${metadata.url}`);
-        notifyUser(parseInt(query.userId), {
+        notifyUser(query.userId.toString(), {
           title: metadata.title,
           url: metadata.url,
           matchedQuery: queryText,
           content: metadata.chunk,
         });
+        console.log(
+          `Notification sent to user ${query.userId} of type ${typeof query.userId} for query "${queryText}"`
+        );
       } else {
         console.log(
           `Article "${metadata.url}" already notified for user "${query.userId}"`
