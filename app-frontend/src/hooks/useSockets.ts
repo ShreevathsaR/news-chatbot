@@ -7,7 +7,7 @@ export const useSocket = (userId: number | null): UseSocketReturn => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const SERVER_URL = 'https://news-chatbot-3ynr.onrender.com';
+  const SERVER_URL = 'https://news-chatbot-j7rc.onrender.com';
 
   useEffect(() => {
     if (!userId) return;
