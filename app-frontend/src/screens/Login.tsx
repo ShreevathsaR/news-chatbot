@@ -35,7 +35,7 @@ const Login = () => {
   const navigate = useNavigate();
   
   async function onSubmit(values: z.infer<typeof signinSchema>) {
-    console.log(values);
+    // console.log(values);
     try {
       const response = await api.post("/auth/login", values);
       console.log(response.data);
