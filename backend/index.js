@@ -75,6 +75,7 @@ export async function notifyUser(userId, article) {
       socket.emit("new_article", {
         title: article.title,
         url: article.url,
+        userId: userId.toString(),
         query: article.matchedQuery,
         content: article.content,
       });
@@ -86,6 +87,7 @@ export async function notifyUser(userId, article) {
         JSON.stringify({
           title: article.title,
           url: article.url,
+          userId: userId.toString(),
           query: article.matchedQuery,
           content: article.content,
         })
