@@ -52,7 +52,7 @@ export const useSocket = (userId: number | null): UseSocketReturn => {
       const response = await api.get('/notifications');
       if (response.data.success) {
         console.log('Fetched notifications:', response.data.data);
-        setNotifications((prev) => [...prev, response.data.data]);
+        setNotifications(response.data.data as Notification[]);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);

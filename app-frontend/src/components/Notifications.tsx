@@ -26,6 +26,8 @@ const Notifications = ({
     setOpen(false);
   }
 
+  console.log("Notifications component rendered with notifications:", notifications);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
