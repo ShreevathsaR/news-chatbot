@@ -17,16 +17,18 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: ["https://chatbot.vathsa.site", "http://localhost:5173"],
-    methods: ["GET", "POST","PUT","DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
 });
 
-app.use(cors({
-  origin: ["https://chatbot.vathsa.site", "http://localhost:5173"],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: ["https://chatbot.vathsa.site", "http://localhost:5173"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.use("/api", newsRoutes, queryRoutes);
@@ -68,7 +70,7 @@ export async function notifyUser(userId, article) {
   console.log(`Notifying user ${userId} titled ${article.title}`);
   const socketId = activeUsers[userId.toString()];
   console.log(`Socket ID for user ${userId}: ${socketId}`);
-  
+
   if (socketId) {
     const socket = io.sockets.sockets.get(socketId);
     if (socket) {
@@ -80,22 +82,45 @@ export async function notifyUser(userId, article) {
         content: article.content,
       });
       console.log(`Notification sent to user ${userId}`);
-      
-      await redis.setex(
-        `notification:${userId.toString()}`,
-        3600,
-        JSON.stringify({
+
+      const storedNotification = await redis.get(
+        `notification:${userId.toString()}`
+      );
+
+      if (storedNotification) {
+        const existingNotification = JSON.parse(storedNotification);
+        existingNotification.push({
           title: article.title,
           url: article.url,
-          userId: userId.toString(),
-          query: article.matchedQuery,
+          matchedQuery: article.matchedQuery,
           content: article.content,
-        })
-      );
+        });
+        await redis.setex(
+          `notification:${userId.toString()}`,
+          3600,
+          JSON.stringify(existingNotification)
+        );
+      } else {
+        await redis.setex(
+          `notification:${userId.toString()}`,
+          3600,
+          JSON.stringify([
+            {
+              title: article.title,
+              url: article.url,
+              userId: userId.toString(),
+              query: article.matchedQuery,
+              content: article.content,
+            },
+          ])
+        );
+      }
     } else {
       delete activeUsers[userId];
       delete socketToUser[socketId];
-      console.log(`Socket ${socketId} for user ${userId} no longer exists, cleaned up`);
+      console.log(
+        `Socket ${socketId} for user ${userId} no longer exists, cleaned up`
+      );
     }
   } else {
     console.log(`User ${userId} is not connected`);
