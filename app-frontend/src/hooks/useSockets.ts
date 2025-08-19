@@ -1,6 +1,5 @@
 import api from '@/lib/api';
 import { Notification, UseSocketReturn } from '@/lib/types/notification';
-import { get } from 'http';
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
@@ -8,14 +7,16 @@ export const useSocket = (userId: number | null): UseSocketReturn => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  const SERVER_URL = 'https://news-chatbot-3ynr.onrender.com';
+
   useEffect(() => {
     if (!userId) return;
 
     getNotifications()
 
-    const newSocket = io('http://localhost:5000', {
-      transports: ['websocket'], 
-      withCredentials: true, 
+    const newSocket = io(SERVER_URL, {
+      transports: ['websocket'],
+      withCredentials: true,
     });
 
     newSocket.on('connect', () => {

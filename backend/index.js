@@ -9,13 +9,14 @@ import axios from "axios";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import redis from "./lib/redis.js";
+import { clearOldNotifications } from "./utils/sendNotifications.js";
 
 dotenv.config();
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: "https://chatbot.vathsa.site",
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -32,49 +33,71 @@ app.get("/", (_req, res) => {
   res.send("API IS RUNNING");
 });
 
-const activeUsers = new Map();
+let activeUsers = {};
+let socketToUser = {};
 
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
 
   socket.on("authenticate", (userId) => {
-    activeUsers.set(userId, socket.id);
+    const previousUserId = socketToUser[socket.id];
+    if (previousUserId && activeUsers[previousUserId] === socket.id) {
+      delete activeUsers[previousUserId];
+    }
+    
+    activeUsers[userId] = socket.id;
+    socketToUser[socket.id] = userId;
     console.log(`User ${userId} connected with socket ${socket.id}`);
   });
 
   socket.on("disconnect", () => {
-    for (const [userId, socketId] of activeUsers.entries()) {
-      if (socketId === socket.id) {
-        activeUsers.delete(userId);
-        console.log(`User ${userId} disconnected`);
-        break;
-      }
+    const userId = socketToUser[socket.id];
+    if (userId) {
+      delete activeUsers[userId];
+      delete socketToUser[socket.id];
+      console.log(`User ${userId} disconnected`);
     }
   });
 });
 
 export async function notifyUser(userId, article) {
   console.log(`Notifying user ${userId} titled ${article.title}`);
-  const socketId = activeUsers.get(userId);
+  const socketId = activeUsers[userId];
+  console.log(`Socket ID for user ${userId}: ${socketId}`);
+  
   if (socketId) {
-    io.to(socketId).emit("new_article", {
-      title: article.title,
-      url: article.url,
-      query: article.matchedQuery,
-      content: article.content,
-    });
-    await redis.setex(
-      `notification:${userId}`,
-      3600,
-      JSON.stringify({
+    const socket = io.sockets.sockets.get(socketId);
+    if (socket) {
+      socket.emit("new_article", {
         title: article.title,
         url: article.url,
         query: article.matchedQuery,
         content: article.content,
-      })
-    );
+      });
+      console.log(`Notification sent to user ${userId}`);
+      
+      await redis.setex(
+        `notification:${userId}`,
+        3600,
+        JSON.stringify({
+          title: article.title,
+          url: article.url,
+          query: article.matchedQuery,
+          content: article.content,
+        })
+      );
+    } else {
+      // Socket doesn't exist anymore, clean up
+      delete activeUsers[userId];
+      delete socketToUser[socketId];
+      console.log(`Socket ${socketId} for user ${userId} no longer exists, cleaned up`);
+    }
+  } else {
+    console.log(`User ${userId} is not connected`);
   }
 }
+
+setInterval(clearOldNotifications, 3600000);
 
 //Exceeding free tier limit so this cron job is stopped
 // const pingServer = () => {

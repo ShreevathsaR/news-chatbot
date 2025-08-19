@@ -20,6 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import api from "@/lib/api";
+import { toast } from "sonner";
 
 const Signup = () => {
   const form = useForm<z.infer<typeof signupSchema>>({
@@ -34,8 +35,17 @@ const Signup = () => {
   async function onSubmit(values: z.infer<typeof signupSchema>) {
     console.log(values);
 
-    const response = await api.post("/auth/register", values);
-    console.log("Registration response:", response.data);
+    try {
+      const response = await api.post("/auth/register", values);
+      console.log("Registration response:", response.data);
+      if(response.data.success) {
+        toast.success("Registration successful! Please log in.");
+        window.location.href = "/login";
+      }
+    } catch (error: any) {
+      console.log(error)
+      toast.error(error.response?.data?.message || "Registration failed");
+    }
   }
 
   return (

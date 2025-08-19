@@ -1,6 +1,6 @@
 import { queryStore } from "@/lib/contexts/queryStore";
 import { Button } from "./ui/button";
-import { PlusIcon, TrashIcon } from "lucide-react";
+import { TrashIcon } from "lucide-react";
 import CreateQueryModal from "./CreateQueryModal";
 import api from "@/lib/api";
 import { toast } from "sonner";

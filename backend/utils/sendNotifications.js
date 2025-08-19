@@ -1,5 +1,7 @@
 import { notifyUser } from "../index.js";
 
+let matchedArticles = [];
+
 export async function checkAndNotifyUsers(
   queriesWithEmbeddings,
   embedding,
@@ -7,7 +9,6 @@ export async function checkAndNotifyUsers(
 ) {
   console.log("Checking and notifying users for new articles...");
 
-  let matchedArticles = [];
 
   if (!queriesWithEmbeddings || queriesWithEmbeddings.length === 0) {
     console.log("No saved queries found");
@@ -29,8 +30,8 @@ export async function checkAndNotifyUsers(
         `Match found for query "${queryText}" with chunk: "${metadata.chunk}"`
       );
 
-      if (!matchedArticles.includes(metadata.url)) {
-        matchedArticles.push(metadata.url);
+      if (!matchedArticles.includes(`${query.userId}:${metadata.url}`)) {
+        matchedArticles.push(`${query.userId}:${metadata.url}`);
         notifyUser(parseInt(query.userId), {
           title: metadata.title,
           url: metadata.url,
@@ -39,7 +40,7 @@ export async function checkAndNotifyUsers(
         });
       } else {
         console.log(
-          `Article "${metadata.url}" already notified for query "${queryText}"`
+          `Article "${metadata.url}" already notified for user "${query.userId}"`
         );
       }
     } else {
@@ -65,4 +66,9 @@ async function compareEmbeddings(embedding1, embedding2) {
     `Comparing embeddings: similarity = ${similarity}, threshold = ${threshold}`
   );
   return similarity >= threshold;
+}
+
+export function clearOldNotifications() {
+  matchedArticles = [];
+  console.log("Cleared notification history");
 }
