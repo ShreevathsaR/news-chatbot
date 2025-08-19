@@ -68,6 +68,8 @@ async function compareEmbeddings(embedding1, embedding2) {
   console.log(
     `Comparing embeddings: similarity = ${similarity}, threshold = ${threshold}`
   );
+  const matching = similarity >= threshold;
+  console.log(`Embeddings match: ${matching}`);
   return similarity >= threshold;
 }
 
