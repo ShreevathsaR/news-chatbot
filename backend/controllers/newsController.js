@@ -5,6 +5,7 @@ import pkg from "he";
 const { decode } = pkg;
 import striptags from "striptags";
 import { ingestArticlesToQdrant } from "../utils/ingestArticles.js";
+import { checkAndNotifyUsers } from "../utils/sendNotifications.js";
 
 const getNewsArticles = async (req, res) => {
   try {
@@ -16,7 +17,7 @@ const getNewsArticles = async (req, res) => {
     // console.log("Parsed RSS:", parsedRSS.rss.channel[0].item);
 
     const items = parsedRSS.rss.channel[0].item;
-    const articleURLs = items.slice(0, 50).map((item) => item.link[0]);
+    const articleURLs = items.slice(0, 3).map((item) => item.link[0]);
     console.log("Number of articles:", articleURLs.length);
 
     const articles = [];
