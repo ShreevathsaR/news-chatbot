@@ -73,7 +73,7 @@ export const getNotifications = async (req, res) => {
   const { id } = req.user;
 
   try {
-    const notificationString = await redis.get(`notification:${id}`);
+    const notificationString = await redis.get(`notification:${id.toString()}`);
 
     if (!notificationString) {
       return res
@@ -94,7 +94,7 @@ export const clearNotifications = async (req, res) => {
   const { id } = req.user;
 
   try {
-    await redis.del(`notification:${id}`);
+    await redis.del(`notification:${id.toString()}`);
     res
       .status(200)
       .json({ success: true, message: "Notifications cleared successfully" });

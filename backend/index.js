@@ -48,16 +48,16 @@ io.on("connection", (socket) => {
     if (previousUserId && activeUsers[previousUserId] === socket.id) {
       delete activeUsers[previousUserId];
     }
-    
-    activeUsers[userId] = socket.id;
-    socketToUser[socket.id] = userId;
+
+    activeUsers[userId.toString()] = socket.id;
+    socketToUser[socket.id] = userId.toString();
     console.log(`User ${userId} connected with socket ${socket.id}`);
   });
 
   socket.on("disconnect", () => {
     const userId = socketToUser[socket.id];
     if (userId) {
-      delete activeUsers[userId];
+      delete activeUsers[userId.toString()];
       delete socketToUser[socket.id];
       console.log(`User ${userId} disconnected`);
     }
@@ -66,7 +66,7 @@ io.on("connection", (socket) => {
 
 export async function notifyUser(userId, article) {
   console.log(`Notifying user ${userId} titled ${article.title}`);
-  const socketId = activeUsers[userId];
+  const socketId = activeUsers[userId.toString()];
   console.log(`Socket ID for user ${userId}: ${socketId}`);
   
   if (socketId) {
@@ -81,7 +81,7 @@ export async function notifyUser(userId, article) {
       console.log(`Notification sent to user ${userId}`);
       
       await redis.setex(
-        `notification:${userId}`,
+        `notification:${userId.toString()}`,
         3600,
         JSON.stringify({
           title: article.title,
@@ -101,6 +101,21 @@ export async function notifyUser(userId, article) {
 }
 
 setInterval(clearOldNotifications, 3600000);
+
+// setInterval(() => {
+//   notifyUser(1, {
+//     title: "Test Notification for User 1",
+//     url: "https://example.com/test",
+//     matchedQuery: "Test Query",
+//     content: "This is a test notification content.",
+//   });
+//   notifyUser(2, {
+//     title: "Test Notification for User 2",
+//     url: "https://example.com/test2",
+//     matchedQuery: "Test Query 2",
+//     content: "This is another test notification content.",
+//   });
+// }, 1000);
 
 //Exceeding free tier limit so this cron job is stopped
 // const pingServer = () => {
