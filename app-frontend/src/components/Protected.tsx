@@ -48,7 +48,7 @@ const Protected = () => {
   }
 
   if (loading) {
-    return <div className="bg-black text-white"><Loader2 className="animate-spin"/>Loading</div>; 
+    return <div className="bg-black flex h-screen items-center justify-center w-screen text-white"><Loader2 className="animate-spin"/>Loading</div>; 
   }
 
   if (!isVerified) {
